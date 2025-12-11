@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ExchangeRateUpdater.Cnb;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ExchangeRateUpdater
 {
@@ -21,23 +23,40 @@ namespace ExchangeRateUpdater
 
         public static void Main(string[] args)
         {
-            try
-            {
-                var provider = new ExchangeRateProvider();
-                var rates = provider.GetExchangeRates(currencies);
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            services.BuildServiceProvider().GetRequiredService<ApplicationRunner>().Run(currencies);
+    
+            Console.ReadLine();
+        }
 
-                Console.WriteLine($"Successfully retrieved {rates.Count()} exchange rates:");
-                foreach (var rate in rates)
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            // Register the IExchangeRateProvider implementation to use
+            services.AddTransient<IExchangeRateProvider, CNBExchangeRateProvider>();
+    
+            services.AddTransient<ApplicationRunner>(); 
+        }
+        
+        public class ApplicationRunner(IExchangeRateProvider provider)
+        {
+            public void Run(IEnumerable<Currency> currencies)
+            {
+                try
                 {
-                    Console.WriteLine(rate.ToString());
+                    var rates = provider.GetExchangeRates(currencies);
+
+                    Console.WriteLine($"Successfully retrieved {rates.Count()} exchange rates:");
+                    foreach (var rate in rates)
+                    {
+                        Console.WriteLine(rate.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Could not retrieve exchange rates: '{e.Message}'.");
                 }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Could not retrieve exchange rates: '{e.Message}'.");
-            }
-
-            Console.ReadLine();
         }
     }
 }
