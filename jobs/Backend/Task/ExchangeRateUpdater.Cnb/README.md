@@ -6,10 +6,10 @@ It implements caching and a resilient retry mechanism to ensure reliable data
 retrieval. 
 
 ## Usage
-`
+
+```
 {
 private readonly IExchangeRateProvider _provider;
-
     public RateConsumer(IExchangeRateProvider provider)
     {
         _provider = provider;
@@ -36,4 +36,4 @@ private readonly IExchangeRateProvider _provider;
         }
     }
 }
-`
+```
